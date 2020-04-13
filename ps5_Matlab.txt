@@ -1,0 +1,94 @@
+?% ECON 5300, UiO, Fall 2015 % this file solves Ex 3.3 of Problem Set 3
+
+% note: - this script calls the user written function equilibrium.m %	- uses the Chebyshev collocation method
+
+%% 1. housekeeping
+clc;
+
+%% 2. define parameters and functional forms
+% parameters alpha = .36; beta = Æå delta = .10, sigma = 2;
+
+% capital income share % subjective discount factor % depreciation rate % relative risk aversion parameter
+% functional forms
+% note: - define utility, production function, and rental rate directly in %	this file, these are so-called anonymous functions (they are not
+%	located in a separate .m file).
+%	- uses element-wise operations, to be compatible with matrices and
+%	vectors
+"»V TP*-’"* *' * *
+
+% utility function if sigma ~= 1
+
+u = @(c) (c.A(1-sigma)-1)/(1-sigma);
+else
+
+u = log(c);	% approaches log when sigma=l
+% marginal utility ul = ø(c) c.A(-sigma);
+% rental rate
+
+%% 3. compute steady-state
+% production function f = 0(k) k.Aalpha;
+% physical capital
+kstar = (alpha*beta/ (1-beta*(1-delta)))A(1/(1-alpha));
+% consumption
+% note: here you can make use of the previously declared anonymous %	functions, here f(k).
+estar = f(kstar)+(1-deltt % value
+Vstar = u(cstar)/(1-beta);
+
+%% 4. set up the function space using the function approximation toolkit
+% dimension
+n = 6;	% number of collocation points
+d = 3;	% number of unknown functions: g (k) , c (k) , V (k)
+% set bounds for the physical capital grid around the steady-state kmin = 0.5*kstar; kmax = 1.5*kstar;
+m
+e)T;
+% use Chebyshev basis functions fspace = fundefn ('cheb',n,kmin, k	= gridmake(funnode(fspace
+VI = 1;
+
+%% 5. initial guess for the unknown functions % guess derivative of the policy functions with respect to k
+% linear guess around the steady-state for the policy functions c = cstar+cl*(k-kstar); g = kstar+gl*(k-kstar);
+¦"numatmr
+% translate the above guess into coefficients using the function % approximation toolkit
+% note: coefficients in the first column, cf(:,l), will be the ones %	associated to c, cf(:,2), to g, and cf(:,3) to V. The dimensionality
+%	of the coefficient matrix cf is therefore (n,d).
+cf = funfitxy	k, [c, g, V] ) ;
+
+%% 6. solve for the dynamic equilibrium with collocation % prepare the root-finding routine
+optset('broyden1,'showiters','true');	% display iterations and the residual
+fprintf('Solving for the dynamic equilibrium:\n')
+% use CompEcon's root-finding routine broyden to find the "root" of the % external function equilibrium.m which evaluates the equilibrium1	, "
+% conditions given the coefficients in cf. Finding the "root"1 or the "zero"'
+% is equivalent to setting the stated equilibrium conditions equal to zero.
+% note: cf (:) stacks the coefficient matrix into a single column vector.
+%	Pass the necessary objects, parameters, and functions to the
+%	routine as well.
+cf = broyden('equilibrium',cf(:),k,fspace,n,d,beta,delta,u,ul,f,f1);
+% unstack coefficients cf = reshape(cf,n,d);
+fprintf (' Done. \n' )	*	' ;• • V* %% 7. plot the policy functions
+number of grid points
+% set up finer evaluation grid N	= 100;
+kplot = linspace(kmin,kmax,N)' ;	% equally spaced (column) grid for k
+% evaluate functions at the finer grid cplot = funeval(cf (:,1),fspace,kplot); gplot = funeval(cf(:,2),fspace,kplot);
+Vplot = funeval(cf(:,3),fspace,kplot);
+% set up figure
+scrsz = get (0, 'ScreenSize');
+figure('Position', [scrsz (3)*1/4 scrsz(4)*l/4 scrsz (3)*1/2 ... scrsz (4)*1/2]);
+% first subplot in a 2-by-2 figure % plot cplot against kplot % set title of the subfigure % set limits of the horizontal-axis % label the axes
+% consumption function subplot(2,2,1) plot(kplot,cplot) title('Consumption function'); xlim([kmin,kmax]);
+xlabel('Capital, k'); ylabel('c(k)');
+% savings function subplot(2,2,2) plot(kplot,[gplot,kplot]) title('Savings function'); xlim([kmin,kmax]);
+xlabel('Capital, k'); ylabel('g(k)');
+% value function subplot(2,2,3) plot(kplot,Vplot) title('Value function') ; xlim([kmin,kmax]);
+xlabel('Capital, k'); ylabel('V(k)');
+function res = equilibrium(cf,k,fspace,n,d,beta,delta,u,ul, f, fl)
+%EQUILIBRIUM evaluates the residual of the dynamic equilibrium conditions %for given coefficients
+% unstack coefficients cf = reshape(cf,n,d);
+% evaluate equilibrium functions x = funeval(cf,fspace,k); c = x (: , 1) ; g = x ( :, 2 ) ;
+V = x (:, 3) ;
+% evaluate future consumption and value (as a function of future capital, g(k)) cp = funeval(cf(:,1),fspace,g);
+Vp = funeval(cf(:,3),fspace,g);
+% Bellman equation res(:,l) = u(c)+beta*Vp-V;
+% Euler equation
+res (:,2) = ul(c)-beta*(f1(g) + (1-delta)) .*ul (cp);
+% resource constraint res (:, 3) = f (k)
+% stack residuals and return res = res(:);
+end
